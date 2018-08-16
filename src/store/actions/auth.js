@@ -1,0 +1,67 @@
+import { TRY_AUTH, AUTH_SET_TOKEN } from './actionTypes';
+import {uiStartLoading, uiStopLoading} from './index';
+import startMainTabs from '../../screens/MainTabs/startMainTabs';
+// import { resolve } from 'dns';
+
+export const tryAuth = (authData, authMode) => {
+    return dispatch => {
+      console.log(authMode);
+      dispatch(uiStartLoading());
+      const apiKey = "AIzaSyCuQxF8yUrUcAVG88IdTJIjVhHjquSj5Ds"
+      let url = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=" + apiKey;
+      if (authMode === 'signup') {
+       url = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=" +apiKey;
+      }
+      fetch(url, {
+        method: "POST",
+        body: JSON.stringify({
+            email: authData.email,
+            password: authData.password,
+            returnSecureToken: true
+        }),
+        headers: {
+            "Content-Type": "application/json"
+        }
+    })
+    .catch(err => {
+        console.log(err);
+        alert("Authentication failed, please try again!");
+        dispatch(uiStopLoading());
+    })
+    .then(res => res.json())
+    .then(parsedRes => {
+      dispatch(uiStopLoading());
+          console.log(parsedRes);
+          if (!parsedRes.idToken) {
+            console.log(parsedRes.error)
+            alert('Authentication failed, please try again! ' + parsedRes.error);
+          }
+          else {
+            dispatch(authSetToken(parsedRes.idToken));
+            startMainTabs();
+          }
+    });
+    };
+};
+
+export const authSetToken = token => {
+    return {
+        type: AUTH_SET_TOKEN,
+        token: token 
+    }
+};
+
+export const authGetToken = () => {
+    return (dispatch, getState) => {
+        const promise = new Promise((resolve, reject) => {
+            const token = getState().auth.token;
+            if (!token) {
+                reject();
+                
+            } else {
+                resolve(token);
+            }
+        });
+        return promise
+    };
+};
