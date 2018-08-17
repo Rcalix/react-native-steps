@@ -21,7 +21,7 @@ import MainText from "../../components/UI/MainText/MainText";
 import ButtonWithBackground from "../../components/UI/ButtonWithBackground/ButtonWithBackground";
 import backgroundImage from "../../assets/background.jpg";
 import validate from "../../utility/validation";
-import { tryAuth } from "../../store/actions/index";
+import { tryAuth, authAutoSignIn } from "../../store/actions/index";
 
 class AuthScreen extends Component {
   state = {
@@ -64,6 +64,9 @@ class AuthScreen extends Component {
     Dimensions.removeEventListener("change", this.updateStyles);
   }
 
+  componentDidMount() {
+    this.props.onAuthoSignIn();
+  }
   switchAuthModeHandler = () => {
     this.setState(prevState => {
       return {
@@ -84,7 +87,6 @@ class AuthScreen extends Component {
       password: this.state.controls.password.value
     };
     this.props.onTryAuth(authData, this.state.authMode);
-    
   };
 
   updateInputState = (key, value) => {
@@ -282,7 +284,8 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    onTryAuth: (authData, authMode )=> dispatch(tryAuth(authData, authMode))
+    onTryAuth: (authData, authMode )=> dispatch(tryAuth(authData, authMode)),
+    onAuthoSignIn: () => dispatch(authAutoSignIn())
   };
 };
 

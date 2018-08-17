@@ -3,14 +3,19 @@ import {uiStartLoading, uiStopLoading, authGetToken  } from './index';
 
 export const addPlace = (placeName, location, image) => {
     return dispatch => {
+        let authToken;
+        dispatch(uiStartLoading());
         dispatch(authGetToken())
         .then(token => {
-            dispatch(uiStartLoading());
+           authToken = token;
            return fetch('https://us-central1-reactnativeapp-6d6da.cloudfunctions.net/storeImage', {
                 method: 'POST',
                 body: JSON.stringify({
                     image: image.base64
-                })
+                }),
+                headers: {
+                    "Authorization": "Bearer " + authToken
+                }
             })
         })
         .catch(err => {
@@ -30,7 +35,7 @@ export const addPlace = (placeName, location, image) => {
             location: location,
             image: parsedRes.imageUrl
         };
-        return  fetch('https://reactnativeapp-6d6da.firebaseio.com/places.json', {
+        return  fetch('https://reactnativeapp-6d6da.firebaseio.com/places.json?auth=' + authToken, {
             method:"POST",
             body: JSON.stringify(placeData)
         })
@@ -94,10 +99,9 @@ export const deletePlace = (key) => {
                     method:"DELETE"
             })
         })
-        
         .then(parseRest => {
             console.log('Done');
-        }); 
+        });
     }
 };
 
