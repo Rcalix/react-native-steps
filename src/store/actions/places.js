@@ -97,28 +97,44 @@ export const getPlaces = () => {
     }
 }
 
-export const deletePlace = (key) => {
-    return dispatch => {
-        dispatch(authGetToken())
-        .catch(err => {
-            alert("somthing went wrong ");
-            console.log(err);
-        })
-        .then(token => {
-            dispatch(removePLace(key));
-            return  fetch('https://reactnativeapp-6d6da.firebaseio.com/places/' + key + '.json?auth=' + token, {
-                    method:"DELETE"
-            })
-        })
-        .then(parseRest => {
-            console.log('Done');
-        });
-    }
-};
-
-export const removePLace = key  => {
+export const removePlace = key  => {
     return {
         type: REMOVE_PLACE,
         key: key
     }
 }
+export const deletePlace = key => {
+    return dispatch => {
+      dispatch(authGetToken())
+        .catch(() => {
+          alert("No valid token found!");
+        })
+        .then(token => {
+          dispatch(removePlace(key));
+          return fetch(
+            "https://reactnativeapp-6d6da.firebaseio.com/places/" +
+              key +
+              ".json?auth=" +
+              token,
+            {
+              method: "DELETE"
+            }
+          );
+        })
+        .then(res => {
+          if (res.ok) {
+            return res.json();
+          } else {
+            throw new Error();
+          }
+        })
+        .then(parsedRes => {
+          console.log("Done!");
+        })
+        .catch(err => {
+          alert("Something went wrong, sorry :/");
+          console.log(err);
+        });
+    };
+  };
+
